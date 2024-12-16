@@ -39,13 +39,14 @@
 
     .game-board {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
       gap: 10px;
       justify-items: center;
       align-items: center;
       margin-bottom: 20px;
       padding: 10px;
       width: 100%;
+      box-sizing: border-box;
     }
 
     .card {
@@ -59,10 +60,9 @@
       border-radius: 4px;
       transition: background-color 0.3s, transform 0.3s;
       box-sizing: border-box;
-      margin: 5px;
       height: 100px;
-      min-width: 120px;
-      max-width: 150px;
+      max-width: 100px;
+      min-width: 80px;
       width: 100%;
     }
 
@@ -122,8 +122,8 @@
     }
 
     @media (max-width: 600px) {
-      .game-board {
-        grid-template-columns: repeat(2, 1fr);
+      .card {
+        max-width: 90px;
       }
     }
   </style>
