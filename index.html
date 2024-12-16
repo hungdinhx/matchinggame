@@ -40,7 +40,7 @@
     .game-board {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px; /* Fixed gap of 10px between cards */
+      gap: 10px;
       justify-items: center;
       align-items: center;
       margin-bottom: 20px;
@@ -57,17 +57,18 @@
       text-align: center;
       cursor: pointer;
       border-radius: 4px;
-      transition: background-color 0.3s;
+      transition: background-color 0.3s, transform 0.3s;
       box-sizing: border-box;
       margin: 5px;
       height: 100px;
-      min-width: 120px; /* Minimum card width */
-      max-width: 150px; /* Set maximum width to ensure cards are uniform */
-      width: 100%; /* Ensure all cards have the same width based on content */
+      min-width: 120px;
+      max-width: 150px;
+      width: 100%;
     }
 
     .card:hover {
       background-color: #ffeb3b;
+      transform: scale(1.05);
     }
 
     .english-card {
@@ -103,6 +104,7 @@
       padding: 10px;
       border-radius: 4px;
       margin-top: 10px;
+      font-size: 16px;
     }
 
     #winner-message {
@@ -121,7 +123,7 @@
 
     @media (max-width: 600px) {
       .game-board {
-        grid-template-columns: repeat(2, 1fr); /* 2 columns on smaller screens */
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
@@ -129,7 +131,7 @@
 <body>
   <div class="game-container">
     <h1>Vocabulary Matching Game</h1>
-    <div id="timer">Time: 0s</div>
+    <div id="timer">Time: 0:00</div>
     <div id="game-board" class="game-board"></div>
     <div id="incorrect-popup">Incorrect! Please try again.</div>
     <button id="reset-button">Reset</button>
@@ -172,6 +174,7 @@
       card.classList.add('card');
       card.classList.add(type === 'english' ? 'english-card' : 'chinese-card');
       card.setAttribute('data-id', word.id);
+      card.setAttribute('aria-label', type === 'english' ? word.english : word.chinese);
       card.textContent = type === 'english' ? word.english : word.chinese;
       card.addEventListener('click', () => cardClicked(card, word, type));
       return card;
@@ -183,71 +186,64 @@
       selectedCard = null;
       const shuffledWords = shuffleArray([...words]);
 
-      // Create 4 English cards and 4 Chinese cards, 8 cards total
       const allCards = [];
       shuffledWords.forEach(word => {
         allCards.push(createCard(word, 'english'));
         allCards.push(createCard(word, 'chinese'));
       });
 
-      // Shuffle and display cards
       const shuffledCards = shuffleArray(allCards);
       shuffledCards.forEach(card => gameBoard.appendChild(card));
-
-      // Get the largest card width to make all cards the same size
-      const cardWidths = Array.from(document.getElementsByClassName('card')).map(card => card.offsetWidth);
-      const maxWidth = Math.max(...cardWidths);
-      document.querySelectorAll('.card').forEach(card => {
-        card.style.width = `${maxWidth}px`;
-      });
 
       startTime = Date.now();
       timerInterval = setInterval(updateTimer, 100);
     }
 
     function cardClicked(card, word, type) {
-      // If no card is selected, select the first one
+      if (selectedCard && (selectedCard.card === card || card.style.visibility === 'hidden')) {
+        return;
+      }
+
       if (!selectedCard) {
         selectedCard = { card, word, type };
         card.classList.add('selected');
         return;
       }
 
-      // If card is already selected, check if it's the matching card
-      if (selectedCard.card !== card) {
-        // Check for match by comparing IDs
-        if (selectedCard.word.id === word.id) {
-          matchedPairs++;
-          selectedCard.card.style.visibility = 'hidden';
-          card.style.visibility = 'hidden';
-          selectedCard = null;
+      if (selectedCard.word.id === word.id) {
+        matchedPairs++;
+        selectedCard.card.style.visibility = 'hidden';
+        card.style.visibility = 'hidden';
+        selectedCard = null;
 
-          // Check if the game is finished
-          if (matchedPairs === 8) {
-            clearInterval(timerInterval);
-            showWinnerMessage();
-          }
-        } else {
-          selectedCard.card.classList.remove('selected');
-          card.classList.remove('selected');
-          selectedCard = null;
+        if (matchedPairs === words.length) {
+          clearInterval(timerInterval);
+          showWinnerMessage();
         }
+      } else {
+        incorrectPopup.style.display = 'block';
+        setTimeout(() => (incorrectPopup.style.display = 'none'), 1000);
+        selectedCard.card.classList.remove('selected');
+        selectedCard = null;
       }
     }
 
     function updateTimer() {
       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-      timerDisplay.textContent = `Time: ${elapsedTime}s`;
+      const minutes = Math.floor(elapsedTime / 60);
+      const seconds = elapsedTime % 60;
+      timerDisplay.textContent = `Time: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     }
 
     function showWinnerMessage() {
       winnerMessage.style.opacity = 1;
-      setTimeout(() => winnerMessage.style.opacity = 0, 3000); // Hide after 3 seconds
+      winnerMessage.textContent = `您是我最優秀的學生! 完成时间: ${timerDisplay.textContent}`;
+      setTimeout(() => (winnerMessage.style.opacity = 0), 3000);
     }
 
     resetButton.addEventListener('click', startGame);
 
-    startGame(); // Start the game initially
+    startGame();
   </script>
 </body>
 </html>
