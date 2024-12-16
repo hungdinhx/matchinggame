@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vocabulary Matching Game</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background-color: #f5f5f5;
@@ -39,14 +43,13 @@
 
     .game-board {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Auto-fit with a minimum size for each button */
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Make sure buttons are responsive */
       gap: 10px;
       justify-items: center;
       align-items: center;
       margin-bottom: 20px;
       padding: 10px;
       width: 100%;
-      box-sizing: border-box;
     }
 
     button {
@@ -59,12 +62,10 @@
       cursor: pointer;
       border-radius: 4px;
       transition: background-color 0.3s, transform 0.3s;
-      box-sizing: border-box;
-      width: 100%;  
-      min-width: 100px;  
-      height: 100px; 
-      position: relative;
+      width: 100%;
+      height: 100px;
       border: none;
+      position: relative;
     }
 
     button:hover {
@@ -87,7 +88,7 @@
     button.matched {
       opacity: 0;
       pointer-events: none;
-      position: absolute; /* Keep matched buttons from being interactive */
+      position: absolute;
     }
 
     button:focus {
@@ -100,10 +101,6 @@
 
     button:disabled {
       cursor: not-allowed;
-    }
-
-    button:hover {
-      background-color: #ffeb3b;
     }
 
     #incorrect-popup {
@@ -132,7 +129,7 @@
     @media (max-width: 600px) {
       button {
         font-size: 14px;
-        padding: 10px;
+        padding: 15px;
       }
     }
   </style>
