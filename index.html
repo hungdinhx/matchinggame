@@ -39,7 +39,7 @@
 
     .game-board {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Auto-fit with a minimum size for each button */
       gap: 10px;
       justify-items: center;
       align-items: center;
@@ -49,59 +49,61 @@
       box-sizing: border-box;
     }
 
-    .card {
+    button {
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 10px;
+      padding: 20px;
       font-size: 16px;
       text-align: center;
       cursor: pointer;
       border-radius: 4px;
       transition: background-color 0.3s, transform 0.3s;
       box-sizing: border-box;
-      height: 100px;
-      max-width: 100px;
-      min-width: 80px;
-      width: 100%;
+      width: 100%;  
+      min-width: 100px;  
+      height: 100px; 
+      position: relative;
+      border: none;
     }
 
-    .card:hover {
+    button:hover {
       background-color: #ffeb3b;
       transform: scale(1.05);
     }
 
-    .english-card {
+    .english-button {
       background-color: #ffeb3b;
     }
 
-    .chinese-card {
+    .chinese-button {
       background-color: #f8d7da;
     }
 
-    .card.selected {
+    button.selected {
       background-color: #ffa500;
     }
 
-    .card.matched {
+    button.matched {
       opacity: 0;
       pointer-events: none;
-      position: absolute; /* Remove from layout flow */
+      position: absolute; /* Keep matched buttons from being interactive */
     }
 
-    button {
-      padding: 10px 20px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-      font-size: 16px;
-      margin-top: 20px;
+    button:focus {
+      outline: none;
+    }
+
+    button:active {
+      transform: scale(1);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
     }
 
     button:hover {
-      background-color: #45a049;
+      background-color: #ffeb3b;
     }
 
     #incorrect-popup {
@@ -128,8 +130,9 @@
     }
 
     @media (max-width: 600px) {
-      .card {
-        max-width: 90px;
+      button {
+        font-size: 14px;
+        padding: 10px;
       }
     }
   </style>
@@ -154,10 +157,21 @@
       { english: 'Various', chinese: '各种各样', id: 5 },
       { english: 'Sincerity', chinese: '真诚', id: 6 },
       { english: 'Earnest', chinese: '认真的', id: 7 },
-      { english: 'Precepts', chinese: '戒律', id: 8 }
+      { english: 'Precepts', chinese: '戒律', id: 8 },
+      { english: 'Restriction', chinese: '限制', id: 9 },
+      { english: 'Enjoyable', chinese: '愉快的', id: 10 },
+      { english: 'Trapped', chinese: '困住', id: 11 },
+      { english: 'Consciousness', chinese: '意识', id: 12 },
+      { english: 'Beneficial', chinese: '有益的', id: 13 },
+      { english: 'Rescue', chinese: '救援', id: 14 },
+      { english: 'Debts', chinese: '债务', id: 15 },
+      { english: 'Interference', chinese: '干扰', id: 16 },
+      { english: 'Awareness', chinese: '意识', id: 17 },
+      { english: 'Gradually', chinese: '逐渐', id: 18 },
+      { english: 'Condenses', chinese: '凝结', id: 19 }
     ];
 
-    let selectedCard = null;
+    let selectedButton = null;
     let matchedPairs = 0;
     let startTime, timerInterval;
 
@@ -175,62 +189,73 @@
       return array;
     }
 
-    function createCard(word, type) {
-      const card = document.createElement('div');
-      card.classList.add('card');
-      card.classList.add(type === 'english' ? 'english-card' : 'chinese-card');
-      card.setAttribute('data-id', word.id);
-      card.setAttribute('aria-label', type === 'english' ? word.english : word.chinese);
-      card.textContent = type === 'english' ? word.english : word.chinese;
-      card.addEventListener('click', () => cardClicked(card, word, type));
-      return card;
+    function getRandomWords() {
+      const selectedWords = [];
+      const shuffledWords = shuffleArray([...words]);
+
+      for (let i = 0; i < 8; i++) {
+        selectedWords.push(shuffledWords[i]);
+      }
+
+      return selectedWords;
+    }
+
+    function createButton(word, type) {
+      const button = document.createElement('button');
+      button.classList.add('button');
+      button.classList.add(type === 'english' ? 'english-button' : 'chinese-button');
+      button.setAttribute('data-id', word.id);
+      button.setAttribute('aria-label', type === 'english' ? word.english : word.chinese);
+      button.textContent = type === 'english' ? word.english : word.chinese;
+      button.addEventListener('click', () => buttonClicked(button, word, type));
+      return button;
     }
 
     function startGame() {
       matchedPairs = 0;
       gameBoard.innerHTML = '';
-      selectedCard = null;
-      const shuffledWords = shuffleArray([...words]);
+      selectedButton = null;
+      const selectedWords = getRandomWords(); // Get 8 random pairs
 
-      const allCards = [];
-      shuffledWords.forEach(word => {
-        allCards.push(createCard(word, 'english'));
-        allCards.push(createCard(word, 'chinese'));
+      const allButtons = [];
+      selectedWords.forEach(word => {
+        allButtons.push(createButton(word, 'english'));
+        allButtons.push(createButton(word, 'chinese'));
       });
 
-      const shuffledCards = shuffleArray(allCards);
-      shuffledCards.forEach(card => gameBoard.appendChild(card));
+      const shuffledButtons = shuffleArray(allButtons);
+      shuffledButtons.forEach(button => gameBoard.appendChild(button));
 
       startTime = Date.now();
       timerInterval = setInterval(updateTimer, 100);
     }
 
-    function cardClicked(card, word, type) {
-      if (selectedCard && (selectedCard.card === card || card.classList.contains('matched'))) {
+    function buttonClicked(button, word, type) {
+      if (selectedButton && (selectedButton.button === button || button.classList.contains('matched'))) {
         return;
       }
 
-      if (!selectedCard) {
-        selectedCard = { card, word, type };
-        card.classList.add('selected');
+      if (!selectedButton) {
+        selectedButton = { button, word, type };
+        button.classList.add('selected');
         return;
       }
 
-      if (selectedCard.word.id === word.id) {
+      if (selectedButton.word.id === word.id) {
         matchedPairs++;
-        selectedCard.card.classList.add('matched');
-        card.classList.add('matched');
-        selectedCard = null;
+        selectedButton.button.classList.add('matched');
+        button.classList.add('matched');
+        selectedButton = null;
 
-        if (matchedPairs === words.length) {
+        if (matchedPairs === 8) {
           clearInterval(timerInterval);
           showWinnerMessage();
         }
       } else {
         incorrectPopup.style.display = 'block';
         setTimeout(() => (incorrectPopup.style.display = 'none'), 1000);
-        selectedCard.card.classList.remove('selected');
-        selectedCard = null;
+        selectedButton.button.classList.remove('selected');
+        selectedButton = null;
       }
     }
 
