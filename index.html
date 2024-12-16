@@ -83,6 +83,11 @@
       background-color: #ffa500;
     }
 
+    .card.matched {
+      opacity: 0;
+      pointer-events: none;
+    }
+
     button {
       padding: 10px 20px;
       background-color: #4caf50;
@@ -200,7 +205,7 @@
     }
 
     function cardClicked(card, word, type) {
-      if (selectedCard && (selectedCard.card === card || card.style.visibility === 'hidden')) {
+      if (selectedCard && (selectedCard.card === card || card.classList.contains('matched'))) {
         return;
       }
 
@@ -212,8 +217,8 @@
 
       if (selectedCard.word.id === word.id) {
         matchedPairs++;
-        selectedCard.card.style.visibility = 'hidden';
-        card.style.visibility = 'hidden';
+        selectedCard.card.classList.add('matched');
+        card.classList.add('matched');
         selectedCard = null;
 
         if (matchedPairs === words.length) {
