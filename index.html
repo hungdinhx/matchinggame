@@ -67,20 +67,11 @@
       height: 100px;
       border: none;
       position: relative;
-      color: #000; /* Ensures text color stays consistent */
-      -webkit-tap-highlight-color: transparent; /* Removes mobile tap highlight */
-      -webkit-text-fill-color: currentColor; /* Prevents font overrides */
-      -webkit-font-smoothing: antialiased;
     }
 
     button:hover {
       background-color: #ffeb3b;
       transform: scale(1.05);
-    }
-
-    button:active {
-      color: #000; /* Ensures no font color change on tap */
-      transform: scale(1);
     }
 
     .english-button {
@@ -97,12 +88,20 @@
 
     button.matched {
       opacity: 0;
-      visibility: hidden;
       pointer-events: none;
+      position: absolute;
     }
 
     button:focus {
       outline: none;
+    }
+
+    button:active {
+      transform: scale(1);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
     }
 
     #incorrect-popup {
@@ -280,7 +279,7 @@
 
     function showWinnerMessage() {
       winnerMessage.style.opacity = 1;
-      winnerMessage.textContent = `您是我最優秀的學生! 完成時間: ${timerDisplay.textContent}`;
+      winnerMessage.textContent = `您是我最優秀的學生! 完成时间: ${timerDisplay.textContent}`;
       setTimeout(() => (winnerMessage.style.opacity = 0), 3000);
     }
 
